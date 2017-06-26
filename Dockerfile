@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Get nodejs and npm
 # in order to be able to work
 # on the front end development
-RUN curl -sL https://deb.nodesource.com/setup_7.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
     && apt-get install -y nodejs
 
 # Install Yarn package as an alternative
