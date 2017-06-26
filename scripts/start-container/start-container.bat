@@ -8,7 +8,7 @@ docker run ^
      -e MYSQL_ROOT_PASSWORD=root ^
      -e MYSQL_DATABASE=%1 ^
      -e MYSQL_USER=root ^
-     mysql:latest
+     mariadb:latest
 docker stop %1
 docker rm -f %1
 docker run ^
