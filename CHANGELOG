@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 05-08-2017
+
+### Changed
+- Update composer.json file dependencies
+- Update default bash aliases
+- Update Dockerfile base image to PHP 7.1
+- Update README
+
+### Removed
+- Remove Database container dependency from scripts
+
 ## [1.0.0] - 08-05-2017
 
 ### Added
