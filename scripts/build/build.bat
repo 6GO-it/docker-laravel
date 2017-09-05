@@ -1,3 +1,3 @@
-docker stop laravel
-docker rmi -f laravel
-docker build -t laravel .
+docker stop %1
+docker rmi -f %1
+docker build -t %1 .
