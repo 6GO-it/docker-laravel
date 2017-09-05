@@ -1,6 +1,8 @@
-FROM webdevops/php-apache:debian-8-php7
+FROM webdevops/php-apache:debian-8-php7:7.1
 
-MAINTAINER  "Claudio Ludovico Panetta <ludo@6go.it>"
+LABEL maintainer=open-source@6go.it \
+      vendor=6go.it \
+      version=1.1.0
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -19,8 +21,10 @@ RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& apt-get update \
 	&& apt-get install yarn
 
-# Clean up all the mess
-# done by installing stuff
+# Install xDebug
+RUN apt-get install php-xdebug
+
+# Clean up all the mess done by installing stuff
 RUN apt-get remove --purge -y software-properties-common && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -40,7 +44,8 @@ COPY configs/.bashrc /root
 COPY configs/.bash_aliases /root
 RUN /bin/bash -c "source /root/.bashrc"
 
-# Get a simple script to initialize the current laravel project
+# Get a simple script if you want to bootstrap
+# a fresh laravel project
 COPY configs/larastart.sh /root/larastart.sh
 RUN chmod 755 /root/larastart.sh
 
