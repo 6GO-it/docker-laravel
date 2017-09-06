@@ -29,7 +29,7 @@ There are some basics scripts that help you build and run the container:
 
 The container itself is almost configuration agnostic but [since it depends on another container](https://github.com/webdevops/Dockerfile), it has few things to keep in mind
 
-- The application root is set to `/app`
+- The application root is set to `/app/public` because laravel has that as entry point
 - The ports needed are `80 443 3306 6379`
 
 ## What is inside
