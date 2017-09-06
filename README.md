@@ -40,4 +40,4 @@ You will find:
 - Latest Nodejs and NPM
 - Yarn as an alternative for NPM
 - PHP 7.1 with necessary extensions and xDebug installed
-- Apache already configured to work on the exposed port 80
+- Nginx already configured to work on the exposed port 80
