@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install basic stuff
 RUN apt-get update -qq \
-    && apt-get install -y -qq vim
+    && apt-get install -y -qq vim apt-utils
 
 # Get nodejs and npm
 # in order to be able to work
@@ -36,7 +36,7 @@ RUN apt-get remove --purge -y software-properties-common && \
     rm -rf /usr/share/man/??_*
 
 # Configure xDebug
-RUN yes | pecl install xdebug \
+RUN yes | pecl install -s xdebug \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
