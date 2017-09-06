@@ -6,4 +6,4 @@ docker run ^
 	-e WEB_DOCUMENT_ROOT=/app/public ^
 	-v "%cd%:/app" ^
 	-p 80:80 ^
-	laravel
+	%2
