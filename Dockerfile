@@ -1,4 +1,4 @@
-FROM webdevops/php-apache:debian-8-php7:7.1
+FROM webdevops/php-nginx:7.1
 
 LABEL maintainer=open-source@6go.it \
       vendor=6go.it \
@@ -9,20 +9,21 @@ ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
 ENV DEBIAN_FRONTEND noninteractive
 
+# Install basic stuff
+RUN apt-get update -qq \
+    && apt-get install -y -qq vim
+
 # Get nodejs and npm
 # in order to be able to work
 # on the front end development
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y -qq nodejs
 
 # Install Yarn package as an alternative
 RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-	&& apt-get update \
-	&& apt-get install yarn
-
-# Install xDebug
-RUN apt-get install php-xdebug
+	&& apt-get update -qq \
+	&& apt-get install -qq yarn
 
 # Clean up all the mess done by installing stuff
 RUN apt-get remove --purge -y software-properties-common && \
@@ -33,6 +34,12 @@ RUN apt-get remove --purge -y software-properties-common && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /usr/share/man/?? && \
     rm -rf /usr/share/man/??_*
+
+# Configure xDebug
+RUN yes | pecl install xdebug \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 # Get the global composer file alongside with
 # some interesting packages
