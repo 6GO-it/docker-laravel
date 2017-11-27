@@ -1,8 +1,8 @@
 FROM webdevops/php-nginx:7.1
 
 LABEL maintainer=open-source@6go.it \
-      vendor=6go.it \
-      version=1.1.0
+    vendor=6go.it \
+    version=1.1.1
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -11,7 +11,12 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install basic stuff
 RUN apt-get update -qq \
-    && apt-get install -y -qq vim apt-utils
+    && apt-get install -y -qq vim \
+    apt-utils \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libmcrypt-dev \
+    libpng-dev
 
 # Get nodejs and npm
 # in order to be able to work
@@ -21,9 +26,9 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 
 # Install Yarn package as an alternative
 RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-	&& echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-	&& apt-get update -qq \
-	&& apt-get install -qq yarn
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+    && apt-get update -qq \
+    && apt-get install -qq yarn
 
 # Clean up all the mess done by installing stuff
 RUN apt-get remove --purge -y software-properties-common && \
@@ -34,6 +39,12 @@ RUN apt-get remove --purge -y software-properties-common && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /usr/share/man/?? && \
     rm -rf /usr/share/man/??_*
+
+# Install PHP Extensions
+RUN docker-php-source extract && \
+    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
+    docker-php-ext-install -j$(nproc) gd && \
+    docker-php-source delete
 
 # Configure xDebug
 RUN yes | pecl install -s xdebug \
