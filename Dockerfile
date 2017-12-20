@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.1
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.1
+    version=1.1.2
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -42,8 +42,9 @@ RUN apt-get remove --purge -y software-properties-common && \
 
 # Install PHP Extensions
 RUN docker-php-source extract && \
-    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
-    docker-php-ext-install -j$(nproc) gd && \
+    docker-php-ext-configure gd --enable-gd-native-ttf --with-freetype-dir=/usr/include/freetype2 --with-png-dir=/usr/include --with-jpeg-dir=/usr/include && \
+    docker-php-ext-install -j$(nproc) bz2 exif gd gmp intl mbstring mysqli opcache pdo_mysql pdo_pgsql pgsql zip iconv mcrypt  && \
+    docker-php-ext-enable xdebug opcache gd && \
     docker-php-source delete
 
 # Configure xDebug
