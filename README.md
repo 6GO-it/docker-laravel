@@ -6,9 +6,9 @@ This docker is crafted for Laravel development only, but if you are brave you ca
 
 This docker image contains everything but Database, in order to include the database you need to manually create it and liking it.
 
-### Why keep the database outside?
+### No database inside
 
-Because we think that the database should have its own container in order to maintain a certain degree of scalability.
+We think that the database should have its own container in order to maintain a certain degree of scalability.
 
 ## How to use this container
 
@@ -18,7 +18,7 @@ Using this docker is pretty simple:
 - Change directory into this repository
 - Build the image manually using the cli command `docker build -t name-of-the-image .`. We suggest using names that are related to Laravel just to have a clear sight of the role of the container
 - Once you have the image you can start as many container as you want
-- To start a container you can use `docker -d -v $(pwd):/app --name some-name name-of-the-image`
+- To start a container you can use `docker run -d -v $(pwd):/app --name some-name name-of-the-image`
 
 There are some basics scripts that help you build and run the container:
 
@@ -39,5 +39,5 @@ You will find:
 - Debian 8 as base OS
 - Latest Nodejs and NPM
 - Yarn as an alternative for NPM
-- PHP 7.1 with necessary extensions and xDebug installed
+- PHP 7.2 with necessary extensions and xDebug installed
 - Nginx already configured to work on the exposed port 80
