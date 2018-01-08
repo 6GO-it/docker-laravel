@@ -147,25 +147,8 @@ RUN apt-get remove --purge -y software-properties-common \
     automake \
     build-essential \
     cmake \
-    libass-dev \
-    libfreetype6-dev \
-    libmp3lame-dev \
-    libopus-dev \
-    libsdl2-dev \
-    libtheora-dev \
-    libtool \
-    libva-dev \
-    libvdpau-dev \
-    libvorbis-dev \
-    libvpx-dev \
-    libx264-dev \
-    libx265-dev \
-    libxcb1-dev \
-    libxcb-shm0-dev \
-    libxcb-xfixes0-dev \
     mercurial \
     texinfo \
-    zlib1g-dev \
     && apt-get clean \
     && apt-get autoclean \
     && echo -n > /var/lib/apt/extended_states \
