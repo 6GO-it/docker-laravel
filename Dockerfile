@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.4
+    version=1.1.5
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -18,11 +18,26 @@ RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
 RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
-# Install all the stuff
-RUN apt-get update -qq \
-    && apt-get install -y -qq vim \
-    apt-utils \
+# Install all the necessary libraries
+RUN apt-get update -y -qq \
+    && apt-get -y -qq install apt-utils \
+    autoconf \
+    automake \
+    build-essential \
+    cmake \
+    git \
+    libass-dev \
     libfreetype6-dev \
+    libsdl2-dev \
+    libtheora-dev \
+    libtool \
+    libva-dev \
+    libvdpau-dev \
+    libvorbis-dev \
+    libxcb1-dev \
+    libxcb-shm0-dev \
+    libxcb-xfixes0-dev \
+    libx264-dev \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
     libpng-dev \
@@ -30,23 +45,81 @@ RUN apt-get update -qq \
     libgmp-dev \
     libmhash-dev \
     libicu-dev \
-    libpq-dev \    
+    libpq-dev \ 
+    libvpx-dev \
+    libfdk-aac-dev \
+    libmp3lame-dev \
+    libopus-dev \
+    mercurial \
+    pkg-config \
+    texinfo \
+    zlib1g-dev
+
+# Install necessary softwares
+RUN apt-get install -y -qq vim \
+    wget \
+    yasm \
     re2c \
     file \
-    yarn
+    yarn \ 
+    jpegoptim \
+    optipng \ 
+    pngquant \
+    gifsicle
+
+# Install node related global packages
+RUN npm install -g svgo
+
+# Install ffmpeg
+RUN mkdir -p ~/ffmpeg_sources \
+    && export MAKEFLAGS="-j4"
+
+RUN cd ~/ffmpeg_sources \
+    && wget -q http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.bz2 \
+    && tar xjf nasm-2.13.02.tar.bz2 \
+    && cd nasm-2.13.02 \
+    && ./autogen.sh > /dev/null \
+    && ./configure --prefix="$HOME/ffmpeg_build" --bindir="/usr/local/bin" > /dev/null \
+    && make > /dev/null \
+    && make install > /dev/null 
+
+RUN cd ~/ffmpeg_sources \
+    && hg clone https://bitbucket.org/multicoreware/x265 -q \
+    && cd x265/build/linux \
+    && cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source \
+    && make > /dev/null \
+    && make install > /dev/null 
+
+RUN cd ~/ffmpeg_sources \
+    && wget -q -O ffmpeg-snapshot.tar.bz2 http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 \
+    && tar xjf ffmpeg-snapshot.tar.bz2 \
+    && cd ffmpeg \
+    && PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+    --prefix="$HOME/ffmpeg_build" \
+    --pkg-config-flags="--static" \
+    --extra-cflags="-I$HOME/ffmpeg_build/include" \
+    --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+    --extra-libs="-lpthread -lm" \
+    --bindir="/usr/local/bin" \
+    --enable-gpl \
+    --enable-libass \
+    --enable-libfdk-aac \
+    --enable-libfreetype \
+    --enable-libmp3lame \
+    --enable-libopus \
+    --enable-libtheora \
+    --enable-libvorbis \
+    --enable-libvpx \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-nonfree \
+    > /dev/null \
+    && make > /dev/null \
+    && make install > /dev/null \
+    && hash -r
 
 # Symbolic link necessary for php extensions
 RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
-
-# Clean up all the mess done by installing stuff
-RUN apt-get remove --purge -y software-properties-common \
-    && apt-get autoremove -y \
-    && apt-get clean \
-    && apt-get autoclean \
-    && echo -n > /var/lib/apt/extended_states \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /usr/share/man/?? \
-    && rm -rf /usr/share/man/??_*
 
 # Since PHP 7.2 mcrypt is not enabled by default
 # so we need to include it manually
@@ -67,22 +140,56 @@ RUN docker-php-source extract \
     && docker-php-ext-enable xdebug opcache gd mcrypt \
     && docker-php-source delete
 
+# Clean up all the mess done by installing stuff
+RUN apt-get remove --purge -y software-properties-common \
+    && apt-get autoremove -y \
+    autoconf \
+    automake \
+    build-essential \
+    cmake \
+    libass-dev \
+    libfreetype6-dev \
+    libmp3lame-dev \
+    libopus-dev \
+    libsdl2-dev \
+    libtheora-dev \
+    libtool \
+    libva-dev \
+    libvdpau-dev \
+    libvorbis-dev \
+    libvpx-dev \
+    libx264-dev \
+    libx265-dev \
+    libxcb1-dev \
+    libxcb-shm0-dev \
+    libxcb-xfixes0-dev \
+    mercurial \
+    texinfo \
+    zlib1g-dev \
+    && apt-get clean \
+    && apt-get autoclean \
+    && echo -n > /var/lib/apt/extended_states \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/share/man/?? \
+    && rm -rf /usr/share/man/??_*
+
 # Updating PHP ini and Nginx configuration with custom ones
 COPY configs/php/98-webdevops-custom.ini /usr/local/etc/php/conf.d/98-webdevops.ini
 COPY configs/nginx/10-general-custom.conf /opt/docker/etc/nginx/vhost.common.d/10-general.conf
 
 # Get the global composer file alongside with some interesting packages
 COPY configs/composer/composer.json /root/.composer/composer.json
-RUN composer global update -qno
 
-# Build up the source files for the root users
+# Copy up the source files for the root users
 COPY configs/bash/.bashrc /root
 COPY configs/bash/.bash_aliases /root
-RUN /bin/bash -c "source /root/.bashrc"
 
 # Get a simple script if you want to bootstrap a fresh laravel project
 COPY configs/laravel/larastart.sh /root/larastart.sh
-RUN chmod 755 /root/larastart.sh
+
+RUN /bin/bash -c "source /root/.bashrc" \
+    && chmod 755 /root/larastart.sh \ 
+    && composer global update -qno
 
 # Expose ports
 EXPOSE 80 443 3306 6379
