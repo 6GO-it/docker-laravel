@@ -6,7 +6,7 @@ This docker is crafted for Laravel development only, but if you are brave you ca
 
 This docker image contains everything but Database, in order to include the database you need to manually create it and liking it.
 
-### No database inside
+## No database inside
 
 We think that the database should have its own container in order to maintain a certain degree of scalability.
 
