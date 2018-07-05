@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.6
+    version=1.1.7
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Get nodejs and npm
 # in order to be able to work
 # on the front end development
-RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 
 # Add Yarn package as an alternative
 RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
@@ -75,9 +75,9 @@ RUN mkdir -p ~/ffmpeg_sources \
     && export MAKEFLAGS="-j4"
 
 RUN cd ~/ffmpeg_sources \
-    && wget -q http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.bz2 \
-    && tar xjf nasm-2.13.02.tar.bz2 \
-    && cd nasm-2.13.02 \
+    && wget -q http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2 \
+    && tar xjf nasm-2.13.03.tar.bz2 \
+    && cd nasm-2.13.03 \
     && ./autogen.sh > /dev/null \
     && ./configure --prefix="$HOME/ffmpeg_build" --bindir="/usr/local/bin" > /dev/null \
     && make > /dev/null \
