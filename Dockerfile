@@ -143,7 +143,7 @@ COPY stubs/bash/.bash_aliases /root
 COPY stubs/larastart.sh /root/scripts/larastart.sh
 
 RUN /bin/bash -c "source /root/.bashrc" \
-    && chmod 755 /root/larastart.sh \ 
+    && chmod 755 /root/scripts/larastart.sh \ 
     && composer global update -qno
 
 # Expose ports
