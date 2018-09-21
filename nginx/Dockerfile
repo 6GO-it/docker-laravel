@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.7
+    version=2.0.0
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -127,7 +127,7 @@ RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
 RUN yes | pecl install -s mcrypt-1.0.1
 
 # Configure xDebug
-RUN yes | pecl install -s xdebug-2.6.0beta1 \
+RUN yes | pecl install -s xdebug-2.6.1 \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
@@ -156,19 +156,19 @@ RUN apt-get remove --purge -y software-properties-common \
     && rm -rf /usr/share/man/?? \
     && rm -rf /usr/share/man/??_*
 
-# Updating PHP ini and Nginx configuration with custom ones
-COPY configs/php/98-webdevops-custom.ini /usr/local/etc/php/conf.d/98-webdevops.ini
-COPY configs/nginx/10-general-custom.conf /opt/docker/etc/nginx/vhost.common.d/10-general.conf
+# Updating PHP ini and Nginx configuration with ones tailored for Laravel development
+COPY configs/98-webdevops-custom.ini /usr/local/etc/php/conf.d/98-webdevops.ini
+COPY configs/10-general-custom.conf /opt/docker/etc/nginx/vhost.common.d/10-general.conf
 
 # Get the global composer file alongside with some interesting packages
-COPY configs/composer/composer.json /root/.composer/composer.json
+COPY ../stubs/composer.json.stub /root/.composer/composer.json
 
 # Copy up the source files for the root users
-COPY configs/bash/.bashrc /root
-COPY configs/bash/.bash_aliases /root
+COPY ../stubs/.bashrc.stub /root/.bashrc
+COPY ../stubs/.bash_aliases.stub /root/.bash_aliases
 
 # Get a simple script if you want to bootstrap a fresh laravel project
-COPY configs/laravel/larastart.sh /root/larastart.sh
+COPY ../stubs/larastart.sh.stub /root/larastart.sh
 
 RUN /bin/bash -c "source /root/.bashrc" \
     && chmod 755 /root/larastart.sh \ 
