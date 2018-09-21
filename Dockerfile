@@ -2,70 +2,44 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.7
+    version=1.1.8
 
 # Set up some basic global environment variables
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
 ENV DEBIAN_FRONTEND noninteractive
 
-# Get nodejs and npm
-# in order to be able to work
-# on the front end development
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-
-# Add Yarn package as an alternative
-RUN curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+# Get Nodejs and NPM, alongside YarnPkg, in order to be able to work with front end stuff
+# BE AWARE the command bash - is risky but we trust the source
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+    && curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
 # Install all the necessary libraries
 RUN apt-get update -y -qq \
-    && apt-get -y -qq install apt-utils \
-    autoconf \
-    automake \
-    build-essential \
-    cmake \
-    git \
-    libass-dev \
-    libfreetype6-dev \
-    libsdl2-dev \
-    libtheora-dev \
-    libtool \
-    libva-dev \
-    libvdpau-dev \
-    libvorbis-dev \
-    libxcb1-dev \
-    libxcb-shm0-dev \
-    libxcb-xfixes0-dev \
-    libx264-dev \
-    libjpeg62-turbo-dev \
-    libmcrypt-dev \
-    libpng-dev \
-    libbz2-dev \
-    libgmp-dev \
-    libmhash-dev \
-    libicu-dev \
-    libpq-dev \ 
-    libvpx-dev \
-    libfdk-aac-dev \
-    libmp3lame-dev \
-    libopus-dev \
-    mercurial \
-    pkg-config \
-    texinfo \
-    zlib1g-dev
+    && apt-get -y -qq install \
+    apt-utils autoconf automake \
+    build-essential cmake git \
+    libass-dev libfreetype6-dev \
+    libsdl2-dev libtheora-dev \
+    libtool libva-dev \
+    libvdpau-dev libvorbis-dev \
+    libxcb1-dev libxcb-shm0-dev \
+    libxcb-xfixes0-dev libx264-dev \
+    libjpeg62-turbo-dev libmcrypt-dev \
+    libpng-dev libbz2-dev \
+    libgmp-dev libmhash-dev \
+    libicu-dev libpq-dev \ 
+    libvpx-dev libfdk-aac-dev \
+    libmp3lame-dev libopus-dev \
+    mercurial pkg-config \
+    texinfo zlib1g-dev
 
 # Install necessary softwares
-RUN apt-get install -y -qq vim \
-    wget \
-    yasm \
-    re2c \
-    file \
-    yarn \ 
-    jpegoptim \
-    optipng \ 
-    pngquant \
-    gifsicle
+RUN apt-get install -y -qq \
+    vim wget yasm \
+    re2c file yarn jpegoptim \
+    optipng pngquant  gifsicle
 
 # Install node related global packages
 RUN npm install -g svgo
@@ -127,7 +101,7 @@ RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
 RUN yes | pecl install -s mcrypt-1.0.1
 
 # Configure xDebug
-RUN yes | pecl install -s xdebug-2.6.0beta1 \
+RUN yes | pecl install -s xdebug-2.6.1 \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
@@ -141,14 +115,8 @@ RUN docker-php-source extract \
     && docker-php-source delete
 
 # Clean up all the mess done by installing stuff
-RUN apt-get remove --purge -y software-properties-common \
-    && apt-get autoremove -y \
-    autoconf \
-    automake \
-    build-essential \
-    cmake \
-    mercurial \
-    texinfo \
+RUN apt-get autoremove --purge -y software-properties-common \
+    autoconf automake  build-essential cmake mercurial texinfo \
     && apt-get clean \
     && apt-get autoclean \
     && echo -n > /var/lib/apt/extended_states \
@@ -160,15 +128,19 @@ RUN apt-get remove --purge -y software-properties-common \
 COPY configs/php/98-webdevops-custom.ini /usr/local/etc/php/conf.d/98-webdevops.ini
 COPY configs/nginx/10-general-custom.conf /opt/docker/etc/nginx/vhost.common.d/10-general.conf
 
+# Add sample workers for supervisor 
+COPY configs/supervisor/horizon-worker-template.conf /opt/docker/etc/supervisor.d/horizon-worker-template.conf
+COPY configs/supervisor/laravel-worker-template.conf /opt/docker/etc/supervisor.d/laravel-worker-template.conf
+
 # Get the global composer file alongside with some interesting packages
-COPY configs/composer/composer.json /root/.composer/composer.json
+COPY stubs/composer/global-composer.json /root/.composer/composer.json
 
 # Copy up the source files for the root users
-COPY configs/bash/.bashrc /root
-COPY configs/bash/.bash_aliases /root
+COPY stubs/bash/.bashrc /root
+COPY stubs/bash/.bash_aliases /root
 
 # Get a simple script if you want to bootstrap a fresh laravel project
-COPY configs/laravel/larastart.sh /root/larastart.sh
+COPY stubs/larastart.sh /root/scripts/larastart.sh
 
 RUN /bin/bash -c "source /root/.bashrc" \
     && chmod 755 /root/larastart.sh \ 
