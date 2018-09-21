@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+
 # Get into the directory where the application will live
 cd /app
+
 # Download the code from the official repository
 # or update the current vendor repository
 if [ -d "vendor" ]; then
@@ -8,11 +10,13 @@ if [ -d "vendor" ]; then
 else
   composer install -o
 fi
-# Generate a new key instance in order to have a clean
-# environment
+
+# Generate a new key instance in order to have a clean environment
 php artisan key:generate
+
 # Remove node_modules because fuck you
 rm -rf node_modules
+
 # Install necessary dependencies
 if ! [ -x "$(command -v yarn)" ]; then
   npm install -g cross-env gulp webpack webpack-dev-server
@@ -28,4 +32,3 @@ else
     yarn run dev
   fi
 fi
-
