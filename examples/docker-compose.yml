@@ -1,0 +1,79 @@
+# https://docs.docker.com/compose/yml/
+# Each service defined in docker-compose.yml must specify exactly one of
+# image or build. Other keys are optional, and are analogous to their
+# docker run command-line counterparts.
+#
+# As with docker run, options specified in the Dockerfile (e.g., CMD,
+# EXPOSE, VOLUME, ENV) are respected by default - you don't need to
+# specify them again in docker-compose.yml.
+#
+version: "3"
+# This docker compose is an example for a full laravel dev environment
+services:
+  # First we need a database
+  database:
+    # We have chosen MariaDB for this example
+    # Compose will attempt to pull if it doesn't exist locally.
+    image: mariadb:10.3
+    # You can specify a name or let docker generate one for you
+    container_name: 6go_srl_laravel_image_example_database
+    # Add environment variables. You can use either an array or a dictionary.
+    #
+    # Environment variables with only a key are resolved to their values on
+    # the machine Compose is running on, which can be helpful for secret or
+    # host-specific values.
+    #
+    # In this case we leverage some variable to automatically create a DB and his user
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=develop
+      - MYSQL_USER=root
+    # A single value, analogous to its docker run counterpart.
+    restart: always
+    # Expose ports. Either specify both ports (HOST:CONTAINER), or just the
+    # container port (a random host port will be chosen).
+    #
+    # We are using the default MySQL/MariaDB ports
+    ports:
+      - "3306:3306"
+  # Next container is about redis
+  redis:
+    # The alpine tag allows us to save resources
+    image: redis:alpine
+    container_name: 6go_srl_laravel_image_example_redis
+    # Exposing the default port
+    ports:
+      - "6379:6379"
+  # Core container, the web one!
+  web:
+    # The official image of this project <3
+    image: 6gosrl/laravel
+    # Specify a container name for the web
+    container_name: 6go_srl_laravel_image_example_web
+    # Set the container dependencies on redis and database containers
+    depends_on:
+      - database
+      - redis
+    # This will tell nginx or apache to point to the laravel public folder
+    environment:
+      - WEB_DOCUMENT_ROOT=/app/public
+    ports:
+      - "80:80"
+    # Bind the current directory to the container's /app directory
+    volumes:
+      - .:/app
+  # A chrome container
+  #
+  # This is an optional container if you want to run Browser tests with
+  # Laravel Dusk
+  chrome:
+    image: robcherry/docker-chromedriver
+    container_name: 6go_srl_laravel_image_example_chrome
+    environment:
+      - CHROMEDRIVER_WHITELISTED_IPS=""
+      - CHROMEDRIVER_PORT="9515"
+    ports:
+      - "9515:9515"
+    # Add or drop container capabilities. See man 7 capabilities for a full list.
+    cap_add:
+      - "SYS_ADMIN"
