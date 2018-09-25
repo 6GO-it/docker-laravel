@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.9
+    version=1.1.10
 
 # Set up some basic global environment variables
 ARG NODE_ENV
