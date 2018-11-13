@@ -2,7 +2,7 @@ FROM webdevops/php-nginx:7.2
 
 LABEL maintainer=open-source@6go.it \
     vendor=6go.it \
-    version=1.1.10
+    version=1.1.11
 
 # Set up some basic global environment variables
 ARG NODE_ENV
@@ -11,15 +11,13 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Get Nodejs and NPM, alongside YarnPkg, in order to be able to work with front end stuff
 # BE AWARE the command bash - is risky but we trust the source
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - \
     && curl -s https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
 # Install all the necessary libraries
-RUN apt-get update -y -qq \
-    && apt-get -y -qq install \
+RUN apt-get -y -qq install \
     apt-utils autoconf automake \
-    build-essential cmake git \
     libass-dev libfreetype6-dev \
     libsdl2-dev libtheora-dev \
     libtool libva-dev \
@@ -32,14 +30,12 @@ RUN apt-get update -y -qq \
     libicu-dev libpq-dev \ 
     libvpx-dev libfdk-aac-dev \
     libmp3lame-dev libopus-dev \
-    mercurial pkg-config \
-    texinfo zlib1g-dev
+    zlib1g-dev
 
 # Install necessary softwares
 RUN apt-get install -y -qq \
-    vim wget yasm \
-    re2c file yarn jpegoptim \
-    optipng pngquant  gifsicle
+    build-essential cmake git systemd systemd-sysv vim wget yasm \
+    re2c file yarn jpegoptim texinfo optipng pngquant  gifsicle mercurial pkg-config
 
 # Install node related global packages
 RUN npm install -g svgo
